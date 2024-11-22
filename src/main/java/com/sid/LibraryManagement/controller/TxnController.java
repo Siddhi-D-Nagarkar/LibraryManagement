@@ -6,6 +6,8 @@ import com.sid.LibraryManagement.exception.BookException;
 import com.sid.LibraryManagement.exception.UserException;
 import com.sid.LibraryManagement.service.impl.TxnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +20,12 @@ public class TxnController {
     private TxnService txnService;
 
     @PostMapping("/issue")
-    public String create(@RequestBody TxnRequest txnRequest) throws UserException, BookException {
-        return txnService.create(txnRequest);
+    public ResponseEntity<String> create(@RequestBody TxnRequest txnRequest) throws UserException, BookException {
+        String txnId = txnService.create(txnRequest);
+        if(txnId != null || !txnId.isEmpty()){
+            return new ResponseEntity<>(txnId, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping("/return")

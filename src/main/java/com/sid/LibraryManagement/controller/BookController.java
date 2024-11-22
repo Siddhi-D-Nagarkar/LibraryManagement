@@ -1,18 +1,19 @@
 package com.sid.LibraryManagement.controller;
 
+import com.sid.LibraryManagement.dto.GenericReturnClass;
 import com.sid.LibraryManagement.dto.request.BookCreationRequest;
 import com.sid.LibraryManagement.dto.response.BookCreationResponse;
 import com.sid.LibraryManagement.dto.response.BookFilterResponse;
 import com.sid.LibraryManagement.enums.BookFilter;
 import com.sid.LibraryManagement.enums.Operator;
 import com.sid.LibraryManagement.service.impl.BookService;
-import com.zaxxer.hikari.HikariDataSource;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.apache.juli.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,17 @@ public class BookController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
 
     @PostMapping("/addBook")
-    public BookCreationResponse addBook(@RequestBody BookCreationRequest request){
-        return bookService.addBook(request);
+    public ResponseEntity<GenericReturnClass> addBook(@RequestBody BookCreationRequest request){
+        BookCreationResponse response = bookService.addBook(request);
+        GenericReturnClass returnObject = GenericReturnClass.builder().data(response).build();
+        if(response != null){
+            returnObject.setCode(0);
+            returnObject.setMsg("Its successful");
+        }else{
+            returnObject.setCode(1);
+            returnObject.setMsg("Its failed");
+        }
+        return new ResponseEntity<>(returnObject, HttpStatus.OK);
     }
 
     @GetMapping("/filter")
