@@ -4,7 +4,7 @@ import com.sid.LibraryManagement.dto.request.TxnRequest;
 import com.sid.LibraryManagement.dto.request.TxnReturnRequest;
 import com.sid.LibraryManagement.exception.BookException;
 import com.sid.LibraryManagement.exception.UserException;
-import com.sid.LibraryManagement.service.TxnService;
+import com.sid.LibraryManagement.service.impl.TxnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

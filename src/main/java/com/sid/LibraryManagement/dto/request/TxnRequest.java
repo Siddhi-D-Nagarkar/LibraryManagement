@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class TxnRequest {
     @NotBlank(message = "User email must not be blank")
     private String userEmail;
