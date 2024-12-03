@@ -33,6 +33,11 @@ public class UserController {
 
     }
 
+    @PostMapping("/addAdmin")
+    public UserCreationResponse addAdmin(@RequestBody @Validated UserCreationRequest request){
+        return userService.addAdmin(request);
+    }
+
 
 }
 

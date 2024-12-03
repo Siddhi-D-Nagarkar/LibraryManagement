@@ -20,7 +20,7 @@ public class Txn extends TimeStamps{
 
     private String txnId;
 
-    @Enumerated(value = EnumType.STRING)
+    @Enumerated
     private TxnStatus txnStatus;
 
     private Double settlementAmount;

@@ -73,48 +73,41 @@ public class TxnService {
                 build();
         txnRepository.save(txn);
         bookService.markBookUnavailable(bookFromDb, userFromDb);
+
         return txnId;
     }
 
     @Transactional(rollbackFor = {BookException.class, UserException.class})
     public Double returnTxn(TxnReturnRequest txnReturnRequest) throws BookException, UserException {
-        // User is valid or not
+        // user is valid or not
         User userFromDb = userService.checkIfUserIsValid(txnReturnRequest.getUserEmail());
         if(userFromDb == null){
-            throw new UserException("User is not valid");
-        }
-        //book no present in my library
-        Book bookFromDb = bookService.checkIfBookIsValid(txnReturnRequest.getBookNo());
-        if (bookFromDb == null){
-            throw  new BookException("Book is not valid");
+            throw new UserException("User is not valid.");
         }
 
+        // book no he is asking, actually belongs to my library
+        Book bookFromDb = bookService.checkIfBookIsValid(txnReturnRequest.getBookNo());
+        if(bookFromDb == null){
+            throw new BookException("book is not valid.");
+        }
         if(bookFromDb.getUser() != null && bookFromDb.getUser().equals(userFromDb)){
             Txn txnFromDb = txnRepository.findByTxnId(txnReturnRequest.getTxnId());
-            if(txnFromDb == null){
-                throw new TxnException("No Txn has been found in my db with this txnid");
-            }
+            if(txnFromDb == null)
+                throw new TxnException(" No txn has been found in my db with this txnid");
 
-            Double amount = calculateSettlementAmount(txnFromDb,bookFromDb);
-            if(amount == bookFromDb.getSecurityAmount()){
+            Double amount = calculateSettlementAmount(txnFromDb, bookFromDb);
+            if(amount == bookFromDb.getSecurityAmount())
                 txnFromDb.setTxnStatus(TxnStatus.RETURN);
-            }else{
+            else
                 txnFromDb.setTxnStatus(TxnStatus.FINED);
-            }
             txnFromDb.setSettlementAmount(amount);
-
-            // mark the book available
+            // mark the book as available
             bookFromDb.setUser(null);
             txnRepository.save(txnFromDb);
-
-
-            return amount;
-        }else {
-            throw new TxnException("Book is assigned to someone else or not at all assigned ");
+            return  amount;
+        }else{
+            throw  new TxnException("Book is assigned to someone else, or not at all assigned");
         }
-
-
-
     }
 
     public Double calculateSettlementAmount(Txn txnFromDb, Book bookFromDb) {

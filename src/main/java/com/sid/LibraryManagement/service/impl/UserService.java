@@ -8,20 +8,47 @@ import com.sid.LibraryManagement.dto.request.UserCreationRequest;
 import com.sid.LibraryManagement.dto.response.UserCreationResponse;
 import com.sid.LibraryManagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Value("${student.authority}")
+    private String studentAuthority;
+
+    @Value("${admin.authority}")
+    private String adminAuthority;
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user =  userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("No user found with username: " + email);
+        }
+        return user;
+    }
+
     UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public UserCreationResponse addStudent(UserCreationRequest request) {
         User user = request.toUser();
         user.setUserType(UserType.STUDENT);
+        user.setPassword(passwordEncoder.encode(request.getUserPassword()));
+        user.setAuthorities(studentAuthority);
+
         User userFromDb = userRepository.save(user);
         return UserCreationResponse.builder()
                 .userName(userFromDb.getName())
@@ -50,5 +77,19 @@ public class UserService {
 
     public User checkIfUserIsValid( String userEmail) {
         return userRepository.findByEmail(userEmail);
+    }
+
+    public UserCreationResponse addAdmin(UserCreationRequest request) {
+        User user = request.toUser();
+        user.setUserType(UserType.ADMIN);
+        user.setPassword(passwordEncoder.encode(request.getUserPassword()));
+        user.setAuthorities(adminAuthority);
+        User userFromDb = userRepository.save(user);
+        return UserCreationResponse.builder()
+                .userName(userFromDb.getName())
+                .userAddress(userFromDb.getAddress())
+                .userPhone(userFromDb.getPhoneNo())
+                .userEmail(userFromDb.getEmail())
+                .build();
     }
 }

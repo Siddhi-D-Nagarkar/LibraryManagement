@@ -21,6 +21,8 @@ public class UserCreationRequest {
 
     private String userPhone;
 
+    private String userPassword;
+
     public User toUser() {
         return User.builder()
                 .name(this.userName)
