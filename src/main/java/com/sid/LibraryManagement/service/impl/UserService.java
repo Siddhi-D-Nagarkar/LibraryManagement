@@ -6,6 +6,7 @@ import com.sid.LibraryManagement.enums.UserFilter;
 import com.sid.LibraryManagement.enums.UserType;
 import com.sid.LibraryManagement.dto.request.UserCreationRequest;
 import com.sid.LibraryManagement.dto.response.UserCreationResponse;
+import com.sid.LibraryManagement.repository.UserCacheRepository;
 import com.sid.LibraryManagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,13 +29,23 @@ public class UserService implements UserDetailsService {
 
     @Value("${admin.authority}")
     private String adminAuthority;
+
+    @Autowired
+    private UserCacheRepository userCacheRepository;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user =  userRepository.findByEmail(email);
-        if (user == null) {
+        User cacheUser = userCacheRepository.getUser(email);
+        if(cacheUser != null) {
+            return cacheUser;
+        }
+
+        User dbUser =  userRepository.findByEmail(email);
+        if (dbUser == null) {
             throw new UsernameNotFoundException("No user found with username: " + email);
         }
-        return user;
+        userCacheRepository.setUser(email, dbUser);
+        return dbUser;
     }
 
     UserRepository userRepository;
